@@ -36,6 +36,8 @@ def reply(event, line_bot_api) -> str:
     message = event.message.text
     if message == "status":
         return user.status
+    if message == "help":
+        return "https://qiita.com/Kampachi_/private/38d178e17fc1d77b2edf"
     if "hello" in message:
         return "good morning!"
     if "おはよう" in message:
@@ -96,7 +98,11 @@ def solve(event, user) -> str:
         reply = "正解！\n"
         user.otetsuki_counter = 0
         user.question_number = next_question.question_id
-        session.commit()
+        reply += next_question.question
+    elif event.message.text == "パス":
+        reply = f"正解は\n{present_question.answer}\nでした\n\n"
+        user.otetsuki_counter = 0
+        user.question_number = next_question.question_id
         reply += next_question.question
     else:
         user.otetsuki_counter += 1
@@ -108,6 +114,7 @@ def solve(event, user) -> str:
         else:
             reply = f"不正解！お手つき{user.otetsuki_counter}/3\n"
             reply += present_question.question
-        session.commit()
+    
+    session.commit()
     
     return reply
