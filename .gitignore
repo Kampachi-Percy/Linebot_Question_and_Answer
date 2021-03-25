@@ -1,0 +1,9 @@
+LINE.db
+create_table.py
+config.py
+questions.csv
+templates/*
+__pycache__/*
+static/css/*
+static/img/*
+static/js/*
