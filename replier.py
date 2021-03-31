@@ -89,7 +89,7 @@ def solve(event, user) -> str:
 
     # このあたりでジャンル選択をする
     if user.question_number == 0:
-        user_question_number = 1
+        user.question_number = 1
 
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
     next_question = session.query(Question).order_by(func.random()).first()

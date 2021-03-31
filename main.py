@@ -17,6 +17,10 @@ handler = WebhookHandler(config.CHANNEL_SECRET)
 def index():
     return render_template("index.html")
 
+@app.route('/research')
+def research():
+    return render_template("research.html")
+
 @app.route("/callback", methods=['POST'])
 def callback(): # Webhookからのリクエストをチェックする
     

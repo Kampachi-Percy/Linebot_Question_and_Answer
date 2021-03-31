@@ -15,6 +15,8 @@ CREATE TABLE questions(
     question TEXT,
     answer TEXT,
     author TEXT,
+    correct_count INTEGER,
+    asked_count INTEGER,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
