@@ -92,29 +92,28 @@ def solve(event, user) -> str:
         user.question_number = 1
 
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
-    next_question = session.query(Question).order_by(func.random()).first()
 
     if event.message.text == present_question.answer:
-        reply = "正解！\n"
+        present_question.correct_count += 1
         user.otetsuki_counter = 0
-        user.question_number = next_question.question_id
-        reply += next_question.question
+        reply = "正解！\n" + next(user)
     elif event.message.text == "パス":
-        reply = f"正解は\n{present_question.answer}\nでした\n\n"
         user.otetsuki_counter = 0
-        user.question_number = next_question.question_id
-        reply += next_question.question
+        reply = f"正解は\n{present_question.answer}\nでした\n\n" + next(user)
     else:
         user.otetsuki_counter += 1
         if user.otetsuki_counter >= 3:
-            reply = f"不正解！正解は\n{present_question.answer}\nでした\n\n"
             user.otetsuki_counter = 0
-            user.question_number = next_question.question_id
-            reply += next_question.question
+            reply = f"不正解！正解は\n{present_question.answer}\nでした\n\n" + next(user)
         else:
             reply = f"不正解！お手つき{user.otetsuki_counter}/3\n"
             reply += present_question.question
     
     session.commit()
-    
     return reply
+
+def next(user) -> str: # 次の問題を出題する関数
+    next_question = session.query(Question).order_by(func.random()).first()
+    user.question_number = next_question.question_id
+    next_question.asked_count += 1
+    return next_question.question
