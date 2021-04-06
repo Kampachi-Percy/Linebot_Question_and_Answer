@@ -8,7 +8,7 @@ from sqlalchemy.sql.expression import func
 doc_post = "投稿モードを開始します\n\n\
 詳しい書き方はこちら\n\
 https://qiita.com/Kampachi_/private/38d178e17fc1d77b2edf"
-doc_qa = "一問一答モード(β版)"
+doc_qa = "一問一答モード(β版)\n\n"
 doc_free = "終了しました"
 
 def reply(event, line_bot_api) -> str:
@@ -53,10 +53,12 @@ def reply(event, line_bot_api) -> str:
     if message == "一問一答" and user.status != "qa":
         user.status = "qa"
         session.commit()
-        return doc_qa
+        reply = doc_qa + solve(event, user)
+        return reply
 
     if message == "終了" and user.status != "free":
         user.status = "free"
+        user.question_number = 0
         session.commit()
         return doc_free
 
@@ -89,7 +91,9 @@ def solve(event, user) -> str:
 
     # このあたりでジャンル選択をする
     if user.question_number == 0:
-        user.question_number = 1
+        reply = next(user)
+        session.commit()
+        return reply
 
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
 
