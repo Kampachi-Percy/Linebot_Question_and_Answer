@@ -45,17 +45,11 @@ def handle_message(event):
     reply = replier.reply(event, line_bot_api)
     # event.reply_token: イベントの応答に用いるトークン
     # TextSendMessage: 返信用のオブジェクト
-    messages = TextSendMessage(text=reply)
+    if type(reply) == str:
+        messages = TextSendMessage(text=reply)
+    elif type(reply) == list:
+        messages = TextSendMessage(text=reply[0], quick_reply=QuickReply(items=reply[1]))
     line_bot_api.reply_message(event.reply_token, messages=messages)
-    # language_list = ["Ruby", "Python", "PHP", "Java", "C"]
-
-    # items = [QuickReplyButton(action=MessageAction(label=f"{language}", text=f"{language}が好き")) for language in language_list]
-
-    # messages = TextSendMessage(text="どの言語が好きですか？",
-    #                            quick_reply=QuickReply(items=items))
-
-    # line_bot_api.reply_message(event.reply_token, messages=messages)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

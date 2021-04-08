@@ -3,7 +3,10 @@
 # スタンプIDは https://developers.line.biz/media/messaging-api/sticker_list.pdf を参照
 
 from database_wrapper import User, Question, session
+from sqlalchemy import distinct
 from sqlalchemy.sql.expression import func
+from linebot.models import QuickReply, QuickReplyButton, MessageAction
+import itertools
 
 doc_post = "投稿モードを開始します\n\n\
 詳しい書き方はこちら\n\
@@ -44,6 +47,11 @@ def reply(event, line_bot_api) -> str:
         return "おはよう！いいてんきだね"
     if "🐡( '-' 🐡  )ﾌｸﾞﾊﾟﾝﾁ" in message:
         return "ぐおお"
+    if message == "test":
+        genres = session.query(Question.genre).distinct(Question.genre).all()
+        # タプルで返ってくるのを配列に整形する
+        question_genres = list(itertools.chain.from_iterable(genres))
+        return str(question_genres)
 
     if message == "投稿" and user.status != "post":
         user.status = "post"
@@ -53,12 +61,13 @@ def reply(event, line_bot_api) -> str:
     if message == "一問一答" and user.status != "qa":
         user.status = "qa"
         session.commit()
-        reply = doc_qa + solve(event, user)
+        reply = solve(event, user)
         return reply
 
     if message == "終了" and user.status != "free":
         user.status = "free"
         user.question_number = 0
+        user.question_genre = "未選択"
         session.commit()
         return doc_free
 
@@ -90,10 +99,20 @@ def post(event, user) -> str:
 def solve(event, user) -> str:
 
     # このあたりでジャンル選択をする
-    if user.question_number == 0:
-        reply = next(user)
-        session.commit()
-        return reply
+    if user.question_genre == "未選択":
+        # 重複なしでジャンルを取得する
+        genres_tuple = session.query(Question.genre).distinct(Question.genre).all()
+        # タプルで返ってくるのを配列に整形する
+        genres_list = list(itertools.chain.from_iterable(genres_tuple))
+
+        if event.message.text in genres_list:
+            user.question_genre = event.message.text
+            reply = next(user)
+            session.commit()
+            return reply
+
+        items = [QuickReplyButton(action=MessageAction(label=genre, text=genre)) for genre in genres_list]
+        return ["一問一答モード\nジャンルを選択してください", items]
 
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
 
@@ -117,7 +136,15 @@ def solve(event, user) -> str:
     return reply
 
 def next(user) -> str: # 次の問題を出題する関数
-    next_question = session.query(Question).order_by(func.random()).first()
+    next_question = session.query(Question).filter(Question.genre==user.question_genre).order_by(func.random()).first()
     user.question_number = next_question.question_id
     next_question.asked_count += 1
     return next_question.question
+
+
+
+# 重複なしでジャンルを取得する
+# question_genres = session.query(Question.genre).distinct(Question.genre).all()
+# items = []
+# for genre in question_genres:
+#     items += QuickReplyButton(action=MessageAction(label=genre, text=f"{genre}をやります"))
