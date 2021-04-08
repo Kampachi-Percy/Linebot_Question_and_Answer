@@ -47,11 +47,6 @@ def reply(event, line_bot_api) -> str:
         return "おはよう！いいてんきだね"
     if "🐡( '-' 🐡  )ﾌｸﾞﾊﾟﾝﾁ" in message:
         return "ぐおお"
-    if message == "test":
-        genres = session.query(Question.genre).distinct(Question.genre).all()
-        # タプルで返ってくるのを配列に整形する
-        question_genres = list(itertools.chain.from_iterable(genres))
-        return str(question_genres)
 
     if message == "投稿" and user.status != "post":
         user.status = "post"
@@ -140,11 +135,3 @@ def next(user) -> str: # 次の問題を出題する関数
     user.question_number = next_question.question_id
     next_question.asked_count += 1
     return next_question.question
-
-
-
-# 重複なしでジャンルを取得する
-# question_genres = session.query(Question.genre).distinct(Question.genre).all()
-# items = []
-# for genre in question_genres:
-#     items += QuickReplyButton(action=MessageAction(label=genre, text=f"{genre}をやります"))
