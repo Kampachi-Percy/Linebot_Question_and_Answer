@@ -134,4 +134,5 @@ def next(user) -> str: # 次の問題を出題する関数
     next_question = session.query(Question).filter(Question.genre==user.question_genre).order_by(func.random()).first()
     user.question_number = next_question.question_id
     next_question.asked_count += 1
-    return next_question.question
+    reply = f"問題No.{next_question.question_id}\n{next_question.question}"
+    return reply
