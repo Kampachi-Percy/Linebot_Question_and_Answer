@@ -8,11 +8,6 @@ from sqlalchemy.sql.expression import func
 from linebot.models import QuickReply, QuickReplyButton, MessageAction
 import itertools
 
-doc_post = "投稿モードを開始します\n\n\
-詳しい書き方はこちら\n\
-https://qiita.com/Kampachi_/private/38d178e17fc1d77b2edf"
-doc_qa = "一問一答モード(β版)\n\n"
-doc_free = "終了しました"
 
 def reply(event, line_bot_api) -> str:
     user_id = event.source.user_id
@@ -51,6 +46,7 @@ def reply(event, line_bot_api) -> str:
     if message == "投稿" and user.status != "post":
         user.status = "post"
         session.commit()
+        doc_post = "投稿モードを開始します\nhttps://qiita.com/Kampachi_/private/38d178e17fc1d77b2edf"
         return doc_post
     
     if message == "一問一答" and user.status != "qa":
@@ -64,6 +60,7 @@ def reply(event, line_bot_api) -> str:
         user.question_number = 0
         user.question_genre = "未選択"
         session.commit()
+        doc_free = "終了しました"
         return doc_free
 
     if user.status == "post":
@@ -91,39 +88,43 @@ def post(event, user) -> str:
         reply = "改行の数が合っていません"
     return reply
 
-def solve(event, user) -> str:
+def solve(event, user):
 
-    # このあたりでジャンル選択をする
+    # 一問一答モードに入ったときのジャンル選択
     if user.question_genre == "未選択":
         # 重複なしでジャンルを取得する
         genres_tuple = session.query(Question.genre).distinct(Question.genre).all()
         # タプルで返ってくるのを配列に整形する
         genres_list = list(itertools.chain.from_iterable(genres_tuple))
 
+        # クイックリプライでうまくジャンルを選択できたら問題を出題する
         if event.message.text in genres_list:
             user.question_genre = event.message.text
             reply = next(user)
             session.commit()
             return reply
+        else: # ジャンルが選択されていなければ, クイックリプライを表示するためのリストを返す
+            genre_choice_text = "一問一答モード\nジャンルを選択してください"
+            items = [QuickReplyButton(action=MessageAction(label=genre, text=genre)) for genre in genres_list]
+            return [genre_choice_text, items]
 
-        items = [QuickReplyButton(action=MessageAction(label=genre, text=genre)) for genre in genres_list]
-        return ["一問一答モード\nジャンルを選択してください", items]
 
+    # 出題された問題の回答に対する処理
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
 
-    if event.message.text == present_question.answer:
+    if event.message.text == present_question.answer: # 正解
         present_question.correct_count += 1
         user.otetsuki_counter = 0
         reply = "正解！\n" + next(user)
-    elif event.message.text == "パス":
+    elif event.message.text == "パス": # パス
         user.otetsuki_counter = 0
         reply = f"正解は\n{present_question.answer}\nでした\n\n" + next(user)
     else:
         user.otetsuki_counter += 1
-        if user.otetsuki_counter >= 3:
+        if user.otetsuki_counter >= 3: # 3回連続不正解
             user.otetsuki_counter = 0
             reply = f"不正解！正解は\n{present_question.answer}\nでした\n\n" + next(user)
-        else:
+        else: # 不正解
             reply = f"不正解！お手つき{user.otetsuki_counter}/3\n"
             reply += present_question.question
     
