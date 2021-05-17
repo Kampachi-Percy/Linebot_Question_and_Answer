@@ -45,6 +45,8 @@ def handle_message(event):
     reply = replier.reply(event, line_bot_api)
     # event.reply_token: イベントの応答に用いるトークン
     # TextSendMessage: 返信用のオブジェクト
+
+    # あまりやりたくないが type(reply) の型によって分岐する
     if type(reply) == str:
         messages = TextSendMessage(text=reply)
     elif type(reply) == list:
