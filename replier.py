@@ -3,6 +3,8 @@
 # スタンプIDは https://developers.line.biz/media/messaging-api/sticker_list.pdf を参照
 
 from database_wrapper import User, Question, session
+from deepl_translator import translator
+
 from sqlalchemy import distinct
 from sqlalchemy.sql.expression import func
 from linebot.models import QuickReply, QuickReplyButton, MessageAction
@@ -32,6 +34,7 @@ def reply(event, line_bot_api) -> str:
         return reply
 
     message = event.message.text
+
     if message == "status":
         return user.status
     if message == "help":
@@ -43,25 +46,36 @@ def reply(event, line_bot_api) -> str:
     if "🐡( '-' 🐡  )ﾌｸﾞﾊﾟﾝﾁ" in message:
         return "ぐおお"
 
+    if message == "翻訳" and user.status != "translate":
+        user.status = "translate"
+        session.commit()
+        doc_translate = "翻訳モード"
+        return doc_translate
+
     if message == "投稿" and user.status != "post":
         user.status = "post"
         session.commit()
         doc_post = "投稿モードを開始します\nhttps://qiita.com/Kampachi_/private/38d178e17fc1d77b2edf"
         return doc_post
     
-    if message == "一問一答" and user.status != "qa":
+    # if message == "一問一答" and user.status != "qa":
+    if message == "一問一答":
         user.status = "qa"
+        user.question_number = 0
+        user.question_genre = "未選択"
         session.commit()
         reply = solve(event, user)
         return reply
 
     if message == "終了" and user.status != "free":
         user.status = "free"
-        user.question_number = 0
-        user.question_genre = "未選択"
         session.commit()
         doc_free = "終了しました"
         return doc_free
+
+    if user.status == "translate":
+        reply = translator(message)
+        return reply
 
     if user.status == "post":
         reply = post(event, user)
@@ -75,7 +89,7 @@ def reply(event, line_bot_api) -> str:
     reply = event.message.text
     return reply
 
-
+# 問題登録
 def post(event, user) -> str:
     message = event.message.text
     if message.count("\n") == 2:
@@ -88,8 +102,8 @@ def post(event, user) -> str:
         reply = "改行の数が合っていません"
     return reply
 
+# 問題を解く
 def solve(event, user):
-
     # 一問一答モードに入ったときのジャンル選択
     if user.question_genre == "未選択":
         # 重複なしでジャンルを取得する
@@ -112,7 +126,7 @@ def solve(event, user):
     # 出題された問題の回答に対する処理
     present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
 
-    if event.message.text == present_question.answer: # 正解
+    if present_question.answer in event.message.text: # 正解(部分一致)
         present_question.correct_count += 1
         user.otetsuki_counter = 0
         reply = "正解！\n" + next(user)

@@ -1,6 +1,7 @@
 LINE.db
 create_table.py
 config.py
+deepl_config.py
 questions.csv
 templates/*
 __pycache__/*

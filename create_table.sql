@@ -21,6 +21,15 @@ CREATE TABLE questions(
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE histories(
+    history_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    question_id INTEGER,
+    result TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TRIGGER when_user_updated AFTER UPDATE ON users
 BEGIN
 UPDATE users SET updated_at = datetime('now', 'localtime') WHERE user_id = OLD.user_id;
@@ -29,4 +38,9 @@ END;
 CREATE TRIGGER when_question_updated AFTER UPDATE ON questions
 BEGIN
 UPDATE questions SET updated_at = datetime('now', 'localtime') WHERE question_id = OLD.question_id;
+END;
+
+CREATE TRIGGER when_history_updated AFTER UPDATE ON histories
+BEGIN
+UPDATE histories SET updated_at = datetime('now', 'localtime') WHERE history_id = OLD.history_id;
 END;
