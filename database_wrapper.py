@@ -15,6 +15,10 @@ class Question(Base):
     __tablename__ = "questions"
     __table_args__ = {"autoload": True}
 
+class History(Base):
+    __tablename__ = "histories"
+    __table_args__ = {"autoload": True}
+
 # セッションを作るクラスを作成
 SessionClass = sessionmaker(engine, autocommit=False) 
 session = SessionClass()
