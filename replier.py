@@ -2,7 +2,7 @@
 # 詳細は https://developers.line.biz/ja/reference/messaging-api を参照
 # スタンプIDは https://developers.line.biz/media/messaging-api/sticker_list.pdf を参照
 
-from database_wrapper import User, Question, session
+from database_wrapper import User, Question, History, session
 from deepl_translator import translator
 
 from sqlalchemy import distinct
@@ -124,17 +124,21 @@ def solve(event, user):
 
 
     # 出題された問題の回答に対する処理
-    present_question = session.query(Question).filter(Question.question_id==user.question_number).first()
+    present_question = session.query(Question).filter(
+        Question.question_id==user.question_number).first()
 
     if present_question.answer in event.message.text: # 正解(部分一致)
+        result = "right"
         present_question.correct_count += 1
         user.otetsuki_counter = 0
         reply = "正解！\n" + next(user)
     elif event.message.text == "パス": # パス
+        result = "pass"
         user.otetsuki_counter = 0
         reply = f"正解は\n{present_question.answer}\nでした\n\n" + next(user)
     else:
         user.otetsuki_counter += 1
+        result = "wrong"
         if user.otetsuki_counter >= 3: # 3回連続不正解
             user.otetsuki_counter = 0
             reply = f"不正解！正解は\n{present_question.answer}\nでした\n\n" + next(user)
@@ -142,6 +146,22 @@ def solve(event, user):
             reply = f"不正解！お手つき{user.otetsuki_counter}/3\n"
             reply += present_question.question
     
+    # 解いた履歴をhistoriesテーブルに保存
+
+    history = session.query(History).filter(
+        History.user_id==user.user_id,
+        History.question_id==present_question.question_id,
+    ).first()
+
+    if history:
+        history.result = result
+    else:
+        new_history = History(
+            user_id=user.user_id,
+            question_id=present_question.question_id,
+            result=result)
+        session.add(new_history)
+
     session.commit()
     return reply
 
