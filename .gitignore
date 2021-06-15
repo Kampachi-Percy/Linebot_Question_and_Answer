@@ -4,6 +4,8 @@ config.py
 deepl_config.py
 questions.csv
 templates/*
+markdown/*
+uploads/*
 __pycache__/*
 static/css/*
 static/img/*
