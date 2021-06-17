@@ -24,31 +24,22 @@ def index():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, "static/img"), "favicon.ico")
 
-@app.route("/mathterro")
-def mathterro():
-    tasks = os.listdir(os.path.join("/home/ubuntu/flask/markdown", "mathterro"))
-    for i in range(len(tasks)):
-        tasks[i] = tasks[i].split(".")[0]
-    tasks.sort()
-    return render_template("mathterro.html", tasks=tasks)
-
-@app.route("/mathterro/<task>")
-def show_md(task):
-    content = read_md(task)
-    return render_template("md.html", title=task, md=content)
-
 # 画像のアップロード先のディレクトリ
 UPLOAD_FOLDER = "/home/ubuntu/flask/uploads"
 # アップロードされる拡張子の制限
 ALLOWED_EXTENTIONS = set(["png", "jpg", "jpeg", "pdf", "gif"])
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 def is_img(filename): # 拡張子の確認
     return "." in filename and filename.split(".")[-1].lower() in ALLOWED_EXTENTIONS
 
-@app.route("/uploader", methods=["GET", "POST"])
-def uploads_file():
+@app.route("/mathterro", methods=["GET", "POST"])
+def mathterro():
+    tasks = os.listdir(os.path.join("/home/ubuntu/flask/markdown", "mathterro"))
+    for i in range(len(tasks)):
+        tasks[i] = tasks[i].split(".")[0]
+    tasks.sort()
+
+    # ここあとからまとめる
     if request.method == "POST":
         file = request.files["file"]
         filename = secure_filename(file.filename)
@@ -68,7 +59,38 @@ def uploads_file():
         flash("提出完了しました！")
         return redirect(request.url)
 
-    return render_template('uploadertest.html')
+    return render_template("mathterro.html", tasks=tasks)
+
+@app.route("/mathterro/<task>")
+def show_md(task):
+    content = read_md(task)
+    return render_template("md.html", title=task, md=content)
+
+
+
+
+# @app.route("/uploader", methods=["GET", "POST"])
+# def uploads_file():
+#     if request.method == "POST":
+#         file = request.files["file"]
+#         filename = secure_filename(file.filename)
+
+#         if filename == "":
+#             flash("ファイルが選択されていません")
+#             return redirect(request.url)
+        
+#         if is_img(file.filename) == False:
+#             flash("対応していないファイル形式です")
+#             return redirect(request.url)
+        
+#         extention = filename.split(".")[-1].lower()
+#         dt_now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+#         filename = dt_now + "." + extention
+#         file.save(os.path.join("/home/ubuntu/flask/uploads", filename))
+#         flash("提出完了しました！")
+#         return redirect(request.url)
+
+#     return render_template('uploadertest.html')
 
 # @app.route("/uploads/<filename>")
 # # ファイルを表示する
