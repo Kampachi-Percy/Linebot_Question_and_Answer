@@ -18,7 +18,7 @@ app.secret_key = config.FLASK_SECRET_KEY
 # ブラウザ上で見える画面
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template("index.html", title="TOP")
 
 @app.route("/favicon.ico")
 def favicon():
@@ -58,8 +58,8 @@ def mathterro():
         file.save(os.path.join("/home/ubuntu/flask/uploads", filename))
         flash("提出完了しました！")
         return redirect(request.url)
-
-    return render_template("mathterro.html", tasks=tasks)
+        
+    return render_template("mathterro.html", title="数テロ改", tasks=tasks)
 
 @app.route("/mathterro/<task>")
 def show_md(task):
@@ -99,7 +99,7 @@ def show_md(task):
 
 @app.route("/linebot_qa")
 def linebot_qa():
-    return render_template("linebot_qa.html")
+    return render_template("linebot_qa.html", title="LINEBot")
 
 
 # LINEBot
