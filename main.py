@@ -56,7 +56,7 @@ def show_md(task):
         
         extention = filename.split(".")[-1].lower()
         dt_now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = dt_now + "." + extention
+        filename = dt_now + "_" + task + "." + extention
         file.save(os.path.join("/home/ubuntu/flask/uploads", filename))
         flash("提出完了しました！")
         return redirect(request.url)
