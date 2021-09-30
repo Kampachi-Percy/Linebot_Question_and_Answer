@@ -33,8 +33,16 @@ def mathterro():
     tasks = os.listdir(os.path.join("/home/ubuntu/flask/markdown", "mathterro"))
     for i in range(len(tasks)):
         tasks[i] = tasks[i].split(".")[0]
-    tasks.sort()
-    return render_template("mathterro.html", title="数テロ改", tasks=tasks)
+    tasks.sort(reverse=True)
+
+    lates = []
+    for task in tasks:
+        if task[0:4] == "2021":
+            lates.append(task)
+        if len(lates) == 3:
+            break
+
+    return render_template("mathterro.html", title="数テロ改", tasks=tasks, lates=lates)
 
 @app.route("/mathterro/<task>", methods=["GET", "POST"])
 def show_md(task):
