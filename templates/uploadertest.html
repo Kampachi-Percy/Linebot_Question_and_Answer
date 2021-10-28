@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>
+        ファイルアップローダ
+    </title>
+</head>
+<body>
+    <div>
+    <ul>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        {% endif %}
+    {% endwith %}
+    </ul>
+    </div>
+    <h1>ファイルアップローダ</h1>
+    <form method=post enctype=multipart/form-data>
+        <p><input type=file name=file>
+        <input type=submit value=Upload>
+    </form>
+</body>
+
+{% endblock %}

@@ -3,7 +3,7 @@ create_table.py
 config.py
 deepl_config.py
 questions.csv
-templates/*
+# templates/*
 markdown/*
 uploads/*
 __pycache__/*

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+{{ md }}
+
+<!-- ここから提出用フォーム -->
+
+<div class="uploader">
+
+<!-- {% if "202" in title %} -->
+
+提出用フォーム
+
+<div>
+<ul>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+</ul>
+</div>
+
+<form method=post enctype=multipart/form-data>
+    <p>
+    <input type=file name=file>
+    <input type=submit value=Upload class="btn btn--orange">
+    </p>
+</form>
+
+<!-- {% endif %} -->
+
+</div>
+
+{% endblock %}

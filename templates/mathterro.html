@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>数テロ改</h1>
+<p>毎週の数テロを掲載しているページ</p>
+
+<ul>
+    <li><a href="https://kampachi.tech/mathterro/about">数テロについて</a></li>
+</ul>
+
+<details open>
+<summary>超・数テロ</summary>
+<ul>
+    <li><a href="https://kampachi.tech/mathterro/ex_mathterro_2021Autumn">2021秋</a></li>
+</ul>
+</details>
+
+<h3>最近の問題</h3>
+
+<ul>
+{% for late in lates %}
+    <li><a href="https://kampachi.tech/mathterro/{{ late }}">{{ late }}</a></li>
+{% endfor %}
+</ul>
+
+<details>
+<summary>過去問(2021)</summary>
+
+<ul>
+{% for task in tasks %}
+    {% if "2021" in task %}
+    <li><a href="https://kampachi.tech/mathterro/{{ task }}">{{ task }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>
+
+</details>
+
+<details>
+<summary>過去問(2020)</summary>
+
+<ul>
+{% for task in tasks %}
+    {% if "2020" in task %}
+        <li><a href="https://kampachi.tech/mathterro/{{ task }}">{{ task }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>
+
+</details>
+
+{% endblock %}
